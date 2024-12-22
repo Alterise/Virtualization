@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  api1:
+    build:
+      context: ./api
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/mydatabase
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  api2:
+    build:
+      context: ./api
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/mydatabase
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  nginx:
+    build:
+      context: ./nginx
+    depends_on:
+      - api1
+      - api2
+    ports:
+      - "80:80"
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
